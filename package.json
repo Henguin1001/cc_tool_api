@@ -1,0 +1,20 @@
+{
+  "name": "qq-cc",
+  "version": "0.0.0",
+  "engines": {
+    "node": "14.x",
+    "npm": "6.x"
+  },
+  "scripts": {
+    "start": "node ./bin/www",
+    "test": "mocha"
+  },
+  "dependencies": {
+    "luxon": "^2.0.1",
+    "tradier-api": "^0.1.0"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^9.1.3"
+  }
+}

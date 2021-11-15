@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>{{ticker}} options</title>
+  <link rel="stylesheet" href="/css/darkly.min.css">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <style>
+    .bg-green {
+      background-color: #dff0d8;
+    }
+    .bg-red {
+      background-color: #f2dede;
+    }
+    .btn-grp-custom {
+      margin-right:  10px;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Covered Call Tool</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarColor01">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            {% if ticker == "QQQ" %}
+              <a class="nav-link active" href="#">QQQ
+                <span class="visually-hidden">(current)</span>
+              </a>
+            {% else %}
+              <a class="nav-link" href="/QQQ">QQQ</a>    
+            {% endif %}
+            
+          </li>
+          <li class="nav-item">
+            {% if ticker == "GLD" %}
+              <a class="nav-link active" href="#">GLD
+                <span class="visually-hidden">(current)</span>
+              </a>
+            {% else %}
+              <a class="nav-link" href="/GLD">GLD</a>    
+            {% endif %}
+          </li>
+          <li class="nav-item">
+            {% if ticker == "SLV" %}
+              <a class="nav-link active" href="#">SLV
+                <span class="visually-hidden">(current)</span>
+              </a>
+            {% else %}
+              <a class="nav-link" href="/SLV">SLV</a>    
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <!-- Content -->
+  {% if not home %}
+  <div class="container mt-5">
+    <div class="row">
+      <h1>{{ticker}}: ${{quote.last}}</h1>
+      {% if date %}
+        <h3>{{date}}</h3>  
+      {% endif %}
+      
+    </div>
+    <div class="row">
+      <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+      {% for expiration_week in dates %}
+          <div class="btn-grp-custom btn-group mr-2" role="group" style="margin-bottom: 10px;" aria-label="First group">
+          {% for expiration in expiration_week %}
+            
+            {% if date and date === expiration.toFormat('yyyy-MM-dd') %}
+              <a type="button" class="btn btn-secondary active" href="#">{{expiration.toFormat('MMM dd')}}</a>
+            {% else %}
+              <a type="button" class="btn btn-secondary" href="/{{ticker}}/{{expiration.toFormat('yyyy-MM-dd')}}">{{expiration.toFormat('MMM dd')}}</a>
+            {% endif %}
+          {% endfor %}
+          </div>
+      {% endfor %}
+      </div>
+    </div>
+    
+    <div class="row">
+      <div id="scroll_container">
+      <table class="table">
+        <thead class="">
+          <tr>
+            <th scope="col">Strike</th>
+            <th scope="col">Premium</th>
+            <th scope="col">Break Even</th>
+            <th scope="col">Yield </br> Assigned</th>
+            <!-- <th scope="col">Yield </br> Assigned (%)</th> -->
+
+            {% if not simple %}
+              <th scope="col">Avg </br> Daily </br> Yield ($/d)</th>
+              <th scope="col">ADY(ppm/d)</th>
+            {% endif %}
+            
+            
+          </tr>
+        </thead>
+        <tbody>
+          {% if chain %}
+            {% set itm = true %}
+            {% for option in chain %}
+              {% if option.strike < quote.last and itm %}
+                <tr id="center" class="table-primary">
+                  <td>Share Price: ${{quote.last}}</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  
+                </tr>
+                {% set itm = false %}
+              {% endif %}
+
+              <tr class="{% if option.strike > quote.last %}btn-outline-secondary{% else %}btn-outline-primary{% endif %}">
+                <!-- <th scope="row" class = "{% if option.strike > quote.last %}text-warning{% else %}text-success{% endif %}">${{option.strike}}</th> -->
+                <th scope="row" class = "{% if option.strike > quote.last %}{% else %}text-info{% endif %}"><b>${{option.strike}}</b></th>
+
+                <td>{{option.mark | round(2)}}</td>
+                <td class="text-warning">${{option.break_even | round(2)}}</td>
+                <td class="{% if option.assignment_gain > 0 %}text-success{% else %}text-danger{% endif %}"><b>${{option.assignment_gain | round(2)}} </b> ({{option.assignment_gain_percent | round(2)}}%)</td>
+                <!-- <td></td> -->
+                {% if not simple %}
+                  <td>{{option.time_gain | round(2)}}</td>
+                  <td>{{(10000*option.time_gain_percent) | round }}</td>
+                {% endif %} 
+                
+              </tr>              
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="/js/bootstrap.min.js"></script>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1ZSF1K31QR"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-1ZSF1K31QR');
+  </script>
+
+</body>
+</html> 
