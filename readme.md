@@ -23,7 +23,7 @@ main();
 
 
 Response:
-```json
+```js
     {
         "quote":{
             //Tradier get Quote response
@@ -31,16 +31,16 @@ Response:
         },
         // expiration dates grouped by week
         "expiration_dates":[
-            [<Luxon DateTime Object>,<Luxon DateTime Object>,<Luxon DateTime Object>],
-            [<Luxon DateTime Object>,<Luxon DateTime Object>,<Luxon DateTime Object>],
+            [{Luxon DateTime Object},{Luxon DateTime Object},{Luxon DateTime Object}],
+            [{Luxon DateTime Object},{Luxon DateTime Object},{Luxon DateTime Object}],
             ...
         ],
-        // expirations not grouped
+        // expiration dates not grouped by week
         "expiration_dates_flat":[
-            <Luxon DateTime Object>,<Luxon DateTime Object>,<Luxon DateTime Object>,...
+            {Luxon DateTime Object},{Luxon DateTime Object},{Luxon DateTime Object}
         ],
         "options_chain": [
-            <CoveredCall Object>,<CoveredCall Object>,<CoveredCall Object>,...
+            {CoveredCall Object},{CoveredCall Object},{CoveredCall Object},...
         ]
     }
 ```
