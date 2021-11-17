@@ -13,8 +13,13 @@ import { CoveredCall } from "./covered_call.mjs";
 
 const VALID_TICKER_REGEX = /^[A-z]{0,5}$/;
 const NYSE_ZONE = 'America/New_York';
+const NYSE_OPEN = {
+    hour: 9, // 6:30 am EST
+    minute: 30
+}
 const NYSE_CLOSE = {
-    hour: 16 // 4 pm EST
+    hour: 16, // 4 pm EST
+    minute: 0
 }
 
 
@@ -140,5 +145,35 @@ export class CCToolAPI {
                 throw new INVALID_DATE_ERROR(expiration_date_sanitized);
             }
         }
+    }
+    // Gets several pages (expiration dates) of cc_results 
+    async get_cc_bulk(ticker, n=2){
+        const quote = await this.get_ticker(ticker);
+        const expiration_dates = await this.get_expirations(ticker);
+        const pages = await Promise.all(
+            expiration_dates
+            .flat(1) // flatten weekly groups 
+            .slice(0,n) // limit pages by n
+            .map(async (expiration_date)=>{
+                const expiration_date_iso = expiration_date.toFormat('yyyy-MM-dd');
+                return await this.get_options(ticker,quote.last, expiration_dates,expiration_date_iso);
+            })
+        );
+        return {quote:quote, expiration_dates: expiration_dates, pages:pages};
+    }
+    static isMarketOpen(iso_date){
+        let now;
+        if(iso_date){
+            now = DateTime
+                .fromISO(iso_date)
+                .setZone(NYSE_ZONE);
+        } else {
+            now = DateTime.local().setZone('America/New_York');
+
+        }
+        const now_minutes = now.hour*60+now.minute;
+        return now.weekday <= 5
+        && now_minutes > (NYSE_OPEN.hour*60 + NYSE_OPEN.minute)
+        && now_minutes < (NYSE_CLOSE.hour*60 + NYSE_CLOSE.minute);
     }
 }
